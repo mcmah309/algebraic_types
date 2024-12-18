@@ -4,11 +4,11 @@ version: 0.0.1
 repository: https://github.com/mcmah309/algebraic_types
 
 environment:
-  sdk: ^3.6.0
+  sdk: 3.7.0-232.0.dev
 
-# Add regular dependencies here.
 dependencies:
-  # path: ^1.8.0
+  # macros: ^0.1.0-main.5
+  json: ^0.20.4
 
 dev_dependencies:
   lints: ^5.0.0
