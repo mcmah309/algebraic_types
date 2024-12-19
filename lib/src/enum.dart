@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:algebraic_types/src/to_and_from_json.dart';
+import 'package:algebraic_types/src/enum_to_and_from_json.dart';
 import 'package:macros/macros.dart';
 
 final variantRegex = RegExp(r'^(\w+)\((.*?)\)$');

@@ -1,3 +1,3 @@
 library;
 
-export 'src/algebraic_types_base.dart';
+export 'src/enum.dart';
