@@ -17,7 +17,7 @@ void main() {
   w = W.Variant2(C(1), B("hello"));
   w = W.fromJson(w.toJson());
   assert(w is W$Variant2);
-  print(w.toJson()); // {"Variant2": [{"x": 1}, {"x": hello}]}
+  print(w.toJson()); // {"Variant2": [{"x": 1}, {"x": "hello"}]}
   w = W.Variant3();
   assert(w is W$Variant3);
   print(w.toJson()); // {"Variant3": null}
