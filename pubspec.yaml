@@ -1,6 +1,6 @@
 name: algebraic_types
 description: Dart macros for algebraic types
-version: 0.0.4
+version: 0.0.5
 repository: https://github.com/mcmah309/algebraic_types
 
 environment:
