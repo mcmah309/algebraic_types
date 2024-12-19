@@ -85,13 +85,32 @@ final variantRegex = RegExp(r'^(\w+)\((.*?)\)$');
 macro class Enum implements ClassTypesMacro
   {
 
-    final String? variant1, variant2;
+    final String? variant1, variant2, variant3, variant4, variant5, variant6, variant7, variant8, variant9, variant10;
 
-    const Enum([this.variant1, this.variant2]);
+    const Enum([
+        this.variant1, 
+        this.variant2,
+        this.variant3,
+        this.variant4,
+        this.variant5,
+        this.variant6,
+        this.variant7,
+        this.variant8,
+        this.variant9,
+        this.variant10,
+        ]);
 
     List<String> get variants => [
         if(variant1 != null) variant1!,
-        if(variant2 != null) variant2!
+        if(variant2 != null) variant2!,
+        if(variant3 != null) variant3!,
+        if(variant4 != null) variant4!,
+        if(variant5 != null) variant5!,
+        if(variant6 != null) variant6!,
+        if(variant7 != null) variant7!,
+        if(variant8 != null) variant8!,
+        if(variant9 != null) variant9!,
+        if(variant10 != null) variant10!,
     ];
 
     @override
