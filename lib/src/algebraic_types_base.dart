@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:algebraic_types/src/to_and_from_json.dart';
 import 'package:macros/macros.dart';
 
 final variantRegex = RegExp(r'^(\w+)\((.*?)\)$');
@@ -114,9 +115,10 @@ macro class Enum implements ClassTypesMacro
     ];
 
     @override
-    FutureOr<void> buildTypesForClass(ClassDeclaration clazz, ClassTypeBuilder builder) {
+    Future<void> buildTypesForClass(ClassDeclaration clazz, ClassTypeBuilder builder) async {
         final className = clazz.identifier.name.substring(1);
         final factories = StringBuffer();
+        final List<String> variantNames = [];
         for(final variant in variants) {
             final match = variantRegex.firstMatch(variant);
             if (match == null) {
@@ -124,28 +126,41 @@ macro class Enum implements ClassTypesMacro
             }
             final newTypeName = match.group(1)!;
             final fieldTypes = match.group(2)!.split(',').map((s) => s.trim()).toList();
+            variantNames.add("$className\$$newTypeName");
             int count = 1;
-            final fields = StringBuffer();
-            final constructors = StringBuffer();
-            final constructorDef = StringBuffer();
-            final constructorCall = StringBuffer();
+            final fieldsPart = StringBuffer();
+            final classConstructorArgsPart = StringBuffer();
+            final factoryConstructorArgsPart = StringBuffer();
+            final factoryConstructorArgsCall = StringBuffer();
+            final List<(String type, String name)> fields = [];
             for(final fieldType in fieldTypes) {
-                fields.write("\t$fieldType v$count;\n");
-                constructors.write("this.v$count,");
-                constructorDef.write("$fieldType v$count,");
-                constructorCall.write("v$count,");
+                fieldsPart.write("\t$fieldType v$count;\n");
+                classConstructorArgsPart.write("this.v$count,");
+                factoryConstructorArgsPart.write("$fieldType v$count,");
+                factoryConstructorArgsCall.write("v$count,");
+                fields.add((fieldType, "v$count"));
+                count++;
             }
-            factories.write("static $className $newTypeName($constructorDef) => $className\$$newTypeName._($constructorCall);\n");
-            builder.declareType("$className\$$newTypeName", DeclarationCode.fromString('''
+            factories.write("static $className $newTypeName($factoryConstructorArgsPart) => $className\$$newTypeName._($factoryConstructorArgsCall);\n");
+            builder.declareType("$className\$$newTypeName", DeclarationCode.fromParts(['''
 final class $className\$$newTypeName implements $className {
-$fields
+$fieldsPart
 
-    $className\$$newTypeName._($constructors);
-}'''));
+    $className\$$newTypeName._($classConstructorArgsPart);''',
+
+    await generateVariantFromJson(builder,"$className\$$newTypeName", fields),
+
+    await generateVariantToJson(builder,"$className\$$newTypeName", fields),
+"}"]));
         }
-        builder.declareType("$className", DeclarationCode.fromString('''
+        builder.declareType("$className", DeclarationCode.fromParts(['''
 sealed class $className {
 $factories
-}'''));
+''',
+
+    await generateEnumToJson(builder, className),
+
+    await generateEnumFromJson(builder, className, variantNames),
+"}"]));
     }
 }
