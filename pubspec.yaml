@@ -4,7 +4,7 @@ version: 0.0.1
 repository: https://github.com/mcmah309/algebraic_types
 
 environment:
-  sdk: 3.7.0-232.0.dev
+  sdk: ^3.5.1
 
 dependencies:
   # macros: ^0.1.0-main.5
