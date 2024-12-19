@@ -37,5 +37,5 @@ class B {
   B(this.x);
 }
 
-@Enum("Variant1(C)", "Variant2(C,B)", "Variant3")
+@EnumSerde("Variant1(C)", "Variant2(C,B)", "Variant3")
 class _W {}

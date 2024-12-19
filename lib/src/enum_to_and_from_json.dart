@@ -62,7 +62,7 @@ Future<Code> generateVariantFromJson(ClassTypeBuilder builder, String prefix, St
             fieldType.startsWith("Set<") ||
             fieldType.startsWith("Map<")) {
           throw Exception(
-              "int, double, String, bool, List, Set, Map not supported yet, wrap in another type and add @JsonCodable()"); // todo
+              "int, double, String, bool, List, Set, Map not supported yet, wrap in another type and add @JsonCodable() or @Serde()"); // todo
         }
         // ignore: prefer_is_empty
         else if (fields.length == 0 || fields.length == 1) {
@@ -129,7 +129,7 @@ Future<Code> generateVariantToJson(ClassTypeBuilder builder, String prefix, Stri
             fieldType.startsWith("Set<") ||
             fieldType.startsWith("Map<")) {
           throw Exception(
-              "int, double, String, bool, List, Set, Map not supported yet, wrap in another type and add @JsonCodable()"); // todo
+              "int, double, String, bool, List, Set, Map not supported yet, wrap in another type and add @JsonCodable() or @Serde()"); // todo
         }
         if(fields.length == 1) {
           parts.add(RawCode.fromString("final $variantName = this.$fieldName.toJson();"));

@@ -148,6 +148,81 @@ final class $prefix$newTypeName implements $className {
 $fieldsPart
 
     $prefix$newTypeName._($classConstructorArgsPart);''',
+"}"]));
+        }
+        builder.declareType(className, DeclarationCode.fromParts(['''
+sealed class $className {
+$factories
+''',
+"}"]));
+    }
+}
+
+macro class EnumSerde implements ClassTypesMacro
+  {
+
+    final String? variant1, variant2, variant3, variant4, variant5, variant6, variant7, variant8, variant9, variant10;
+
+    const EnumSerde([
+        this.variant1, 
+        this.variant2,
+        this.variant3,
+        this.variant4,
+        this.variant5,
+        this.variant6,
+        this.variant7,
+        this.variant8,
+        this.variant9,
+        this.variant10,
+        ]);
+
+    List<String> get variants => [
+        if(variant1 != null) variant1!,
+        if(variant2 != null) variant2!,
+        if(variant3 != null) variant3!,
+        if(variant4 != null) variant4!,
+        if(variant5 != null) variant5!,
+        if(variant6 != null) variant6!,
+        if(variant7 != null) variant7!,
+        if(variant8 != null) variant8!,
+        if(variant9 != null) variant9!,
+        if(variant10 != null) variant10!,
+    ];
+
+    @override
+    Future<void> buildTypesForClass(ClassDeclaration clazz, ClassTypeBuilder builder) async {
+        final className = clazz.identifier.name.substring(1);
+        final prefix = "$className\$";
+        final factories = StringBuffer();
+        final List<String> variantNames = [];
+        for(final variant in variants) {
+            final match = variantRegex.firstMatch(variant);
+            if (match == null) {
+                throw Exception("Variant `$variant` is not valid");
+            }
+            final newTypeName = match.group(1)!;
+            final fieldTypes = match.group(2)?.split(',').map((s) => s.trim()).toList();
+            variantNames.add(newTypeName);
+            int count = 1;
+            final fieldsPart = StringBuffer();
+            final classConstructorArgsPart = StringBuffer();
+            final factoryConstructorArgsPart = StringBuffer();
+            final factoryConstructorArgsCall = StringBuffer();
+            final List<(String type, String name)> fields = [];
+            for(final fieldType in fieldTypes ?? const []) {
+                fieldsPart.write("\t$fieldType v$count;\n");
+                classConstructorArgsPart.write("this.v$count,");
+                factoryConstructorArgsPart.write("$fieldType v$count,");
+                factoryConstructorArgsCall.write("v$count,");
+                fields.add((fieldType, "v$count"));
+                count++;
+            }
+            factories.write("static $className $newTypeName($factoryConstructorArgsPart) => $prefix$newTypeName._($factoryConstructorArgsCall);\n");
+            builder.declareType("$prefix$newTypeName", DeclarationCode.fromParts(['''
+final class $prefix$newTypeName implements $className {
+$fieldsPart
+
+    $prefix$newTypeName._($classConstructorArgsPart);''',
 
     await generateVariantFromJson(builder,prefix, newTypeName, fields),
 
