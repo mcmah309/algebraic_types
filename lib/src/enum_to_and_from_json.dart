@@ -40,10 +40,22 @@ Future<Code> generateVariantFromJson(ClassTypeBuilder builder, String variantNam
   for (final field in fields) {
     final (fieldType, fieldName) = field;
     switch (fieldType) {
-      // todo needs primitives
+      case 'int':
+        final integer = await builder.resolveIdentifier(_dartCore, 'int');
+        parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", integer, ";"]));
+      case 'double':
+        final double_ = await builder.resolveIdentifier(_dartCore, 'double');
+        parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", double_, ";"]));
+      case 'String':
+        parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", string, ";"]));
+      case 'bool':
+        final bool_ = await builder.resolveIdentifier(_dartCore, 'bool');
+        parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", bool_, ";"]));
       default:
+        if(fieldType.startsWith("List<") || fieldType.startsWith("Set<") || fieldType.startsWith("Map<")) {
+          throw Exception("List, Set, Map not supported yet"); // todo
+        }
         parts.add(RawCode.fromParts(["final $fieldName = $fieldType.fromJson(${variantName}_[r'$fieldName'] as ",map,"<",string,",", object,"?> );"]));
-        break;
     }
   }
   final constructorArgs = fields.map((field) => field.$2).join(", ");
@@ -63,8 +75,21 @@ Future<Code> generateVariantToJson(ClassTypeBuilder builder, String variantName,
   for (final field in fields) {
     final (fieldType, fieldName) = field;
     switch (fieldType) {
-      // todo needs primitives
+      case 'int':
+        final integer = await builder.resolveIdentifier(_dartCore, 'int');
+        parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", integer, ";"]));
+      case 'double':
+        final double_ = await builder.resolveIdentifier(_dartCore, 'double');
+        parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", double_, ";"]));
+      case 'String':
+        parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", string, ";"]));
+      case 'bool':
+        final bool_ = await builder.resolveIdentifier(_dartCore, 'bool');
+        parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", bool_, ";"]));
       default:
+        if(fieldType.startsWith("List<") || fieldType.startsWith("Set<") || fieldType.startsWith("Map<")) {
+          throw Exception("List, Set, Map not supported yet"); // todo
+        }
         parts.add(RawCode.fromString("${variantName}_[r'$fieldName'] = this.$fieldName.toJson();"));
         break;
     }
