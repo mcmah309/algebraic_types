@@ -32,30 +32,27 @@ Future<Code> generateEnumFromJson(
   return RawCode.fromParts(parts);
 }
 
-Future<Code> generateVariantFromJson(
-    ClassTypeBuilder builder, String prefix, String variantName, List<(String type, String name)> fields) async {
+Future<Code> generateVariantFromJson(ClassTypeBuilder builder, String prefix, String variantName,
+    List<(String type, String name)> fields) async {
   final map = await builder.resolveIdentifier(_dartCore, 'Map');
   final string = await builder.resolveIdentifier(_dartCore, 'String');
   final object = await builder.resolveIdentifier(_dartCore, 'Object');
+  final list = await builder.resolveIdentifier(_dartCore, 'List');
   final List<RawCode> parts = [];
   parts.add(RawCode.fromParts(
       ["factory $prefix$variantName.fromJson(", map, "<", string, ",", object, "?> json) {"]));
-  parts.add(RawCode.fromParts(
-      ["final $variantName = json[r'$variantName'] as ", map, "<", string, ",", object, "?>;"]));
+  if (fields.length == 1) {
+    parts.add(RawCode.fromParts(
+        ["final $variantName = json[r'$variantName'] as ", map, "<", string, ",", object, "?>;"]));
+  } else {
+    parts.add(RawCode.fromParts(
+        ["final $variantName = json[r'$variantName'] as ", list, "<", object, "?>;"]));
+  }
+  int count = 0;
   for (final field in fields) {
     final (fieldType, fieldName) = field;
     switch (fieldType) {
-      // case 'int':
-      //   final integer = await builder.resolveIdentifier(_dartCore, 'int');
-      //   parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", integer, ";"]));
-      // case 'double':
-      //   final double_ = await builder.resolveIdentifier(_dartCore, 'double');
-      //   parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", double_, ";"]));
-      // case 'String':
-      //   parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", string, ";"]));
-      // case 'bool':
-      //   final bool_ = await builder.resolveIdentifier(_dartCore, 'bool');
-      //   parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", bool_, ";"]));
+      // todo handle primitives
       default:
         if (fieldType == "int" ||
             fieldType == "double" ||
@@ -67,15 +64,28 @@ Future<Code> generateVariantFromJson(
           throw Exception(
               "int, double, String, bool, List, Set, Map not supported yet, wrap in another type and add @JsonCodable()"); // todo
         }
-        parts.add(RawCode.fromParts([
-          "final $fieldName = $fieldType.fromJson($variantName[r'$fieldName'] as ",
-          map,
-          "<",
-          string,
-          ",",
-          object,
-          "?> );"
-        ]));
+        if (fields.length == 1) {
+          parts.add(RawCode.fromParts([
+            "final $fieldName = $fieldType.fromJson($variantName as ",
+            map,
+            "<",
+            string,
+            ",",
+            object,
+            "?> );"
+          ]));
+        } else {
+          parts.add(RawCode.fromParts([
+            "final $fieldName = $fieldType.fromJson($variantName[$count] as ",
+            map,
+            "<",
+            string,
+            ",",
+            object,
+            "?> );"
+          ]));
+          count++;
+        }
     }
   }
   final constructorArgs = fields.map((field) => field.$2).join(", ");
@@ -84,29 +94,25 @@ Future<Code> generateVariantFromJson(
   return RawCode.fromParts(parts);
 }
 
-Future<Code> generateVariantToJson(
-    ClassTypeBuilder builder, String prefix, String variantName, List<(String type, String name)> fields) async {
+Future<Code> generateVariantToJson(ClassTypeBuilder builder, String prefix, String variantName,
+    List<(String type, String name)> fields) async {
   final map = await builder.resolveIdentifier(_dartCore, 'Map');
   final string = await builder.resolveIdentifier(_dartCore, 'String');
   final object = await builder.resolveIdentifier(_dartCore, 'Object');
+  final list = await builder.resolveIdentifier(_dartCore, 'List');
   final List<Code> parts = [];
   parts.add(RawCode.fromParts([map, "<", string, ",", object, "?> toJson() {"]));
-  parts.add(RawCode.fromParts(["final json = <", string, ",", object, "?>{};"]));
-  parts.add(RawCode.fromParts(["final $variantName = <", string, ",", object, "?>{};"]));
+  if(fields.length == 1) {
+    parts.add(RawCode.fromParts(["final json = <", string, ",", object, "?>{};"]));
+  }
+  else {
+    parts.add(RawCode.fromParts(["final json = <", string, ",", list, "<", object, "?>>{};"]));
+    parts.add(RawCode.fromParts(["final $variantName = [];"]));
+  }
   for (final field in fields) {
     final (fieldType, fieldName) = field;
     switch (fieldType) {
-      // case 'int':
-      //   final integer = await builder.resolveIdentifier(_dartCore, 'int');
-      //   parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", integer, ";"]));
-      // case 'double':
-      //   final double_ = await builder.resolveIdentifier(_dartCore, 'double');
-      //   parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", double_, ";"]));
-      // case 'String':
-      //   parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", string, ";"]));
-      // case 'bool':
-      //   final bool_ = await builder.resolveIdentifier(_dartCore, 'bool');
-      //   parts.add(RawCode.fromParts(["final $fieldName = ${variantName}_[r'$fieldName'] as ", bool_, ";"]));
+      // todo handle primitives
       default:
         if (fieldType == "int" ||
             fieldType == "double" ||
@@ -118,7 +124,12 @@ Future<Code> generateVariantToJson(
           throw Exception(
               "int, double, String, bool, List, Set, Map not supported yet, wrap in another type and add @JsonCodable()"); // todo
         }
-        parts.add(RawCode.fromString("$variantName[r'$fieldName'] = this.$fieldName.toJson();"));
+        if(fields.length == 1) {
+          parts.add(RawCode.fromString("final $variantName = this.$fieldName.toJson();"));
+        }
+        else {
+          parts.add(RawCode.fromString("$variantName.add(this.$fieldName.toJson());"));
+        }
         break;
     }
   }
