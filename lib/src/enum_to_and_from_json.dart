@@ -64,7 +64,8 @@ Future<Code> generateVariantFromJson(ClassTypeBuilder builder, String prefix, St
           throw Exception(
               "int, double, String, bool, List, Set, Map not supported yet, wrap in another type and add @JsonCodable()"); // todo
         }
-        if (fields.length == 1) {
+        // ignore: prefer_is_empty
+        else if (fields.length == 0 || fields.length == 1) {
           parts.add(RawCode.fromParts([
             "final $fieldName = $fieldType.fromJson($variantName as ",
             map,
@@ -102,6 +103,12 @@ Future<Code> generateVariantToJson(ClassTypeBuilder builder, String prefix, Stri
   final list = await builder.resolveIdentifier(_dartCore, 'List');
   final List<Code> parts = [];
   parts.add(RawCode.fromParts([map, "<", string, ",", object, "?> toJson() {"]));
+  // ignore: prefer_is_empty
+  if(fields.length == 0) {
+    parts.add(RawCode.fromParts(["return { r'$variantName': null};"]));
+    parts.add(RawCode.fromParts(["}"]));
+    return RawCode.fromParts(parts);
+  }
   if(fields.length == 1) {
     parts.add(RawCode.fromParts(["final json = <", string, ",", object, "?>{};"]));
   }
@@ -138,3 +145,4 @@ Future<Code> generateVariantToJson(ClassTypeBuilder builder, String prefix, Stri
   parts.add(RawCode.fromString("}"));
   return RawCode.fromParts(parts);
 }
+

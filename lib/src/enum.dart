@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:algebraic_types/src/enum_to_and_from_json.dart';
 import 'package:macros/macros.dart';
 
-final variantRegex = RegExp(r'^(\w+)\((.*?)\)$');
+final variantRegex = RegExp(r'^(\w+)(?:\(([^)]*)\))?$');
 
 // macro class Enum
 //     implements ClassTypesMacro, ClassDeclarationsMacro
@@ -126,7 +126,7 @@ macro class Enum implements ClassTypesMacro
                 throw Exception("Variant `$variant` is not valid");
             }
             final newTypeName = match.group(1)!;
-            final fieldTypes = match.group(2)!.split(',').map((s) => s.trim()).toList();
+            final fieldTypes = match.group(2)?.split(',').map((s) => s.trim()).toList();
             variantNames.add(newTypeName);
             int count = 1;
             final fieldsPart = StringBuffer();
@@ -134,7 +134,7 @@ macro class Enum implements ClassTypesMacro
             final factoryConstructorArgsPart = StringBuffer();
             final factoryConstructorArgsCall = StringBuffer();
             final List<(String type, String name)> fields = [];
-            for(final fieldType in fieldTypes) {
+            for(final fieldType in fieldTypes ?? const []) {
                 fieldsPart.write("\t$fieldType v$count;\n");
                 classConstructorArgsPart.write("this.v$count,");
                 factoryConstructorArgsPart.write("$fieldType v$count,");
@@ -142,19 +142,19 @@ macro class Enum implements ClassTypesMacro
                 fields.add((fieldType, "v$count"));
                 count++;
             }
-            factories.write("static $className $newTypeName($factoryConstructorArgsPart) => $className\$$newTypeName._($factoryConstructorArgsCall);\n");
+            factories.write("static $className $newTypeName($factoryConstructorArgsPart) => $prefix$newTypeName._($factoryConstructorArgsCall);\n");
             builder.declareType("$prefix$newTypeName", DeclarationCode.fromParts(['''
-final class $className\$$newTypeName implements $className {
+final class $prefix$newTypeName implements $className {
 $fieldsPart
 
-    $className\$$newTypeName._($classConstructorArgsPart);''',
+    $prefix$newTypeName._($classConstructorArgsPart);''',
 
     await generateVariantFromJson(builder,prefix, newTypeName, fields),
 
     await generateVariantToJson(builder,prefix, newTypeName, fields),
 "}"]));
         }
-        builder.declareType("$className", DeclarationCode.fromParts(['''
+        builder.declareType(className, DeclarationCode.fromParts(['''
 sealed class $className {
 $factories
 ''',

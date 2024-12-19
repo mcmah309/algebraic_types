@@ -10,11 +10,16 @@ void main() {
   w = W.fromJson(w.toJson());
   assert(w is W$Variant2);
   print(w.toJson());
+  w = W.Variant3();
+  assert(w is W$Variant3);
+  print(w.toJson());
   switch (w) {
-    case W$Variant1():
+    case W$Variant1(:final v1):
+      print("Variant1");
+    case W$Variant2(:final v1, :final v2):
       print("Variant2");
-    case W$Variant2():
-      print("Variant2");
+    case W$Variant3():
+      print("Variant3");
   }
 }
 
@@ -32,5 +37,5 @@ class B {
   B(this.x);
 }
 
-@Enum("Variant1(C)", "Variant2(C,B)")
+@Enum("Variant1(C)", "Variant2(C,B)", "Variant3")
 class _W {}
