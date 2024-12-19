@@ -117,6 +117,7 @@ macro class Enum implements ClassTypesMacro
     @override
     Future<void> buildTypesForClass(ClassDeclaration clazz, ClassTypeBuilder builder) async {
         final className = clazz.identifier.name.substring(1);
+        final prefix = "$className\$";
         final factories = StringBuffer();
         final List<String> variantNames = [];
         for(final variant in variants) {
@@ -126,7 +127,7 @@ macro class Enum implements ClassTypesMacro
             }
             final newTypeName = match.group(1)!;
             final fieldTypes = match.group(2)!.split(',').map((s) => s.trim()).toList();
-            variantNames.add("$className\$$newTypeName");
+            variantNames.add(newTypeName);
             int count = 1;
             final fieldsPart = StringBuffer();
             final classConstructorArgsPart = StringBuffer();
@@ -142,15 +143,15 @@ macro class Enum implements ClassTypesMacro
                 count++;
             }
             factories.write("static $className $newTypeName($factoryConstructorArgsPart) => $className\$$newTypeName._($factoryConstructorArgsCall);\n");
-            builder.declareType("$className\$$newTypeName", DeclarationCode.fromParts(['''
+            builder.declareType("$prefix$newTypeName", DeclarationCode.fromParts(['''
 final class $className\$$newTypeName implements $className {
 $fieldsPart
 
     $className\$$newTypeName._($classConstructorArgsPart);''',
 
-    await generateVariantFromJson(builder,"$className\$$newTypeName", fields),
+    await generateVariantFromJson(builder,prefix, newTypeName, fields),
 
-    await generateVariantToJson(builder,"$className\$$newTypeName", fields),
+    await generateVariantToJson(builder,prefix, newTypeName, fields),
 "}"]));
         }
         builder.declareType("$className", DeclarationCode.fromParts(['''
@@ -160,7 +161,7 @@ $factories
 
     await generateEnumToJson(builder, className),
 
-    await generateEnumFromJson(builder, className, variantNames),
+    await generateEnumFromJson(builder, className, prefix, variantNames),
 "}"]));
     }
 }
