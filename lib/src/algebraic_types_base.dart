@@ -5,7 +5,9 @@ import 'package:macros/macros.dart';
 final variantRegex = RegExp(r'^(\w+)\((.*?)\)$');
 
 macro class Enum
-    implements ClassTypesMacro, ClassDeclarationsMacro, ClassDefinitionMacro {
+    implements ClassTypesMacro, ClassDeclarationsMacro
+    // ClassDefinitionMacro 
+    {
 
 
       final String? variant1, variant2;
@@ -55,24 +57,26 @@ $fields
         final newTypeName = match.group(1)!;
         final fieldTypes = match.group(2)!.split(',').map((s) => s.trim()).toList();
         int count = 1;
-        final constructor = StringBuffer();
+        final constructorDef = StringBuffer();
+        final constructorCall = StringBuffer();
         for(final fieldType in fieldTypes) {
-          constructor.write("$fieldType v$count,");
+          constructorDef.write("$fieldType v$count,");
+          constructorCall.write("v$count,");
         }
-        // builder.declareInType(DeclarationCode.fromString("factory $className.$newTypeName($constructor) = $className\$$newTypeName._;"));
-        builder.declareInType(DeclarationCode.fromString("factory $className.$newTypeName($constructor);"));
+        builder.declareInType(DeclarationCode.fromString("static $className $newTypeName($constructorDef) => $className\$$newTypeName._($constructorCall);"));
+        // builder.declareInType(DeclarationCode.fromString("external $className.$newTypeName($constructor);"));
       }
   }
 
-  @override
-  Future<void> buildDefinitionForClass(
-      ClassDeclaration clazz, TypeDefinitionBuilder builder) async {
-        final className = clazz.identifier.name;
-        final constructors = await builder.constructorsOf(clazz);
-        for (final constructor in constructors) {
-          final constructorName = constructor.identifier.name;
-          final constructorBuilder = await builder.buildConstructor(constructor.identifier);
-          constructorBuilder.augment(body: FunctionBodyCode.fromString("= $className\$$constructorName._;"));
-        }
-  }
+  // @override
+  // Future<void> buildDefinitionForClass(
+  //     ClassDeclaration clazz, TypeDefinitionBuilder builder) async {
+  //       final className = clazz.identifier.name;
+  //       final constructors = await builder.constructorsOf(clazz);
+  //       for (final constructor in constructors) {
+  //         final constructorName = constructor.identifier.name;
+  //         final constructorBuilder = await builder.buildConstructor(constructor.identifier);
+  //         constructorBuilder.augment(body: FunctionBodyCode.fromString("= $className\$$constructorName._;"));
+  //       }
+  // }
 }
