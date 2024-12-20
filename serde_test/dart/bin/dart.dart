@@ -3,7 +3,7 @@ import 'package:algebraic_types/algebraic_types.dart';
 import 'package:http/http.dart' as http;
 import 'package:json/json.dart';
 
-// *Bug in macro implementation, causes compilation error, cannot nest on top*
+// *Bug in Dart's macro implementation, causes compilation error, cannot nest on top https://github.com/dart-lang/sdk/issues/59771 *
 // @JsonCodable()
 // class RequestData {
 //   final String message;
@@ -57,7 +57,7 @@ Future<void> main() async {
   // await structEnumStruct(url, requestData);
 }
 
-// *macro bug cannot find `Action` when used as function argument*
+// *Bug in Dart's macro implementation, cannot find `Action` when used as function argument https://github.com/dart-lang/sdk/issues/59772 *
 // Future<void> enumStruct(Uri url, Action action) async {
 //   final response = await http.post(
 //     url.replace(pathSegments: [...url.pathSegments, "enum_struct"]),
