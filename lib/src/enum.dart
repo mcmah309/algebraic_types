@@ -5,6 +5,7 @@ import 'package:macros/macros.dart';
 
 final variantRegex = RegExp(r'^(\w+)(?:\(([^)]*)\))?$');
 
+// * Related issues: https://github.com/dart-lang/sdk/issues/59761 https://github.com/dart-lang/sdk/issues/59760 https://github.com/dart-lang/sdk/issues/59748 *
 // macro class Enum
 //     implements ClassTypesMacro, ClassDeclarationsMacro
 //     // ClassDefinitionMacro 
