@@ -142,7 +142,7 @@ macro class Enum implements ClassTypesMacro
                 fields.add((fieldType, "v$count"));
                 count++;
             }
-            factories.write("static $className $newTypeName($factoryConstructorArgsPart) => $prefix$newTypeName._($factoryConstructorArgsCall);\n");
+            factories.write("factory $className $newTypeName($factoryConstructorArgsPart) = $prefix$newTypeName._($factoryConstructorArgsCall);\n");
             builder.declareType("$prefix$newTypeName", DeclarationCode.fromParts(['''
 final class $prefix$newTypeName implements $className {
 $fieldsPart
