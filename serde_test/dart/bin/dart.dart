@@ -3,18 +3,16 @@ import 'package:algebraic_types/algebraic_types.dart';
 import 'package:http/http.dart' as http;
 import 'package:json/json.dart';
 
-@JsonCodable()
-class RequestData {
-  final String message;
-  final Action action;
+// *Bug in macro implementation, causes compilation error, cannot nest on top*
+// @JsonCodable()
+// class RequestData {
+//   final String message;
+//   final Action action;
 
-  RequestData({required this.message, required this.action});
-}
+//   RequestData({required this.message, required this.action});
+// }
 
-@EnumSerde(
-  "Create(CreateData)",
-  "Delete"
-)
+@EnumSerde("Create(CreateData)", "Delete")
 class _Action {}
 
 @JsonCodable()
@@ -26,27 +24,59 @@ class CreateData {
 }
 
 Future<void> main() async {
-  // final url = Uri.parse('http://127.0.0.1:3000/');
+  final url = Uri.parse('http://127.0.0.1:3000/');
+
+  final action = Action.Create(CreateData(id: 1, name: 'Example'));
+
+  await enumStruct(url, action);
 
   // final requestData = RequestData(
   //   message: 'Hello, World!',
-  //   action: Action.Create(CreateData(id: 1, name: 'Example')),
-  // );
-  Action.Create(CreateData(id: 1, name: 'Example'));
-  // print(requestData.toJson());
-
-  // final response = await http.post(
-  //   url,
-  //   headers: {'Content-Type': 'application/json'},
-  //   body: jsonEncode(requestData.toJson()),
+  //   action: action,
   // );
 
-  // if (response.statusCode == 200) {
-  //   final responseData = RequestData.fromJson(jsonDecode(response.body));
-  //   print('Response received:');
-  //   print('Message: ${responseData.message}');
-  //   print('Action: ${responseData.action}');
-  // } else {
-  //   print('Request failed with status: ${response.statusCode}');
-  // }
+  // await structEnumStruct(url, requestData);
 }
+
+Future<void> enumStruct(Uri url, Action action) async {
+  final response = await http.post(
+    url.replace(pathSegments: [...url.pathSegments, "enum_struct"]),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode(action.toJson()),
+  );
+  if (response.statusCode == 200) {
+    print('enumStruct response received:');
+    final responseData = Action.fromJson(jsonDecode(response.body));
+    print('Action: ${responseData.toJson()}');
+    switch (responseData) {
+      case Action$Create():
+        print('Action: Create');
+      case Action$Delete():
+        print('Action: Delete');
+    }
+  } else {
+    throw 'enumStruct request failed with status: ${response.statusCode}';
+  }
+}
+
+// Future<void> structEnumStruct(Uri url, RequestData requestData) async {
+//   final response = await http.post(
+//     url.replace(pathSegments: [...url.pathSegments, "struct_enum_struct"]),
+//     headers: {'Content-Type': 'application/json'},
+//     body: jsonEncode(requestData.toJson()),
+//   );
+//   if (response.statusCode == 200) {
+//     print('structEnumStruct response received:');
+//     final responseData = RequestData.fromJson(jsonDecode(response.body));
+//     print('Message: ${responseData.message}');
+//     print('Action: ${responseData.action}');
+//     switch (responseData.action) {
+//       case Action$Create():
+//         print('Action: Create');
+//       case Action$Delete():
+//         print('Action: Delete');
+//     }
+//   } else {
+//     throw 'structEnumStruct request failed with status: ${response.statusCode}';
+//   }
+// }
