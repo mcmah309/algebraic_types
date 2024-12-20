@@ -28,17 +28,6 @@ Future<void> main() async {
 
   final action = Action.Create(CreateData(id: 1, name: 'Example'));
 
-  await enumStruct(url, action);
-
-  // final requestData = RequestData(
-  //   message: 'Hello, World!',
-  //   action: action,
-  // );
-
-  // await structEnumStruct(url, requestData);
-}
-
-Future<void> enumStruct(Uri url, Action action) async {
   final response = await http.post(
     url.replace(pathSegments: [...url.pathSegments, "enum_struct"]),
     headers: {'Content-Type': 'application/json'},
@@ -57,7 +46,38 @@ Future<void> enumStruct(Uri url, Action action) async {
   } else {
     throw 'enumStruct request failed with status: ${response.statusCode}';
   }
+
+  // await enumStruct(url, action);
+
+  // final requestData = RequestData(
+  //   message: 'Hello, World!',
+  //   action: action,
+  // );
+
+  // await structEnumStruct(url, requestData);
 }
+
+// *macro bug cannot find `Action` when used as function argument*
+// Future<void> enumStruct(Uri url, Action action) async {
+//   final response = await http.post(
+//     url.replace(pathSegments: [...url.pathSegments, "enum_struct"]),
+//     headers: {'Content-Type': 'application/json'},
+//     body: jsonEncode(action.toJson()),
+//   );
+//   if (response.statusCode == 200) {
+//     print('enumStruct response received:');
+//     final responseData = Action.fromJson(jsonDecode(response.body));
+//     print('Action: ${responseData.toJson()}');
+//     switch (responseData) {
+//       case Action$Create():
+//         print('Action: Create');
+//       case Action$Delete():
+//         print('Action: Delete');
+//     }
+//   } else {
+//     throw 'enumStruct request failed with status: ${response.statusCode}';
+//   }
+// }
 
 // Future<void> structEnumStruct(Uri url, RequestData requestData) async {
 //   final response = await http.post(
