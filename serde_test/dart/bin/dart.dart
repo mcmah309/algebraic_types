@@ -26,7 +26,7 @@ class CreateData {
 Future<void> main() async {
   final url = Uri.parse('http://127.0.0.1:3000/');
 
-  final action = Action.Create(CreateData(id: 1, name: 'Example'));
+  final action = Action.create(CreateData(id: 1, name: 'Example'));
 
   final response = await http.post(
     url.replace(pathSegments: [...url.pathSegments, "enum_struct"]),

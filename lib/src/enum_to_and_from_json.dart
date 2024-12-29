@@ -1,3 +1,4 @@
+import 'package:change_case/change_case.dart';
 import 'package:macros/macros.dart';
 
 final _dartCore = Uri.parse('dart:core');
@@ -34,6 +35,7 @@ Future<Code> generateEnumFromJson(
 
 Future<Code> generateVariantFromJson(ClassTypeBuilder builder, String prefix, String variantName,
     List<(String type, String name)> fields) async {
+  final variantNameCamel = variantName.toCamelCase();
   final map = await builder.resolveIdentifier(_dartCore, 'Map');
   final string = await builder.resolveIdentifier(_dartCore, 'String');
   final object = await builder.resolveIdentifier(_dartCore, 'Object');
@@ -43,10 +45,10 @@ Future<Code> generateVariantFromJson(ClassTypeBuilder builder, String prefix, St
       ["factory $prefix$variantName.fromJson(", map, "<", string, ",", object, "?> json) {"]));
   if (fields.length == 1) {
     parts.add(RawCode.fromParts(
-        ["final $variantName = json[r'$variantName'] as ", map, "<", string, ",", object, "?>;"]));
+        ["final $variantNameCamel = json[r'$variantName'] as ", map, "<", string, ",", object, "?>;"]));
   } else {
     parts.add(RawCode.fromParts(
-        ["final $variantName = json[r'$variantName'] as ", list, "<", object, "?>;"]));
+        ["final $variantNameCamel = json[r'$variantName'] as ", list, "<", object, "?>;"]));
   }
   int count = 0;
   for (final field in fields) {
@@ -67,7 +69,7 @@ Future<Code> generateVariantFromJson(ClassTypeBuilder builder, String prefix, St
         // ignore: prefer_is_empty
         else if (fields.length == 0 || fields.length == 1) {
           parts.add(RawCode.fromParts([
-            "final $fieldName = $fieldType.fromJson($variantName as ",
+            "final $fieldName = $fieldType.fromJson($variantNameCamel as ",
             map,
             "<",
             string,
@@ -77,7 +79,7 @@ Future<Code> generateVariantFromJson(ClassTypeBuilder builder, String prefix, St
           ]));
         } else {
           parts.add(RawCode.fromParts([
-            "final $fieldName = $fieldType.fromJson($variantName[$count] as ",
+            "final $fieldName = $fieldType.fromJson($variantNameCamel[$count] as ",
             map,
             "<",
             string,
@@ -97,6 +99,7 @@ Future<Code> generateVariantFromJson(ClassTypeBuilder builder, String prefix, St
 
 Future<Code> generateVariantToJson(ClassTypeBuilder builder, String prefix, String variantName,
     List<(String type, String name)> fields) async {
+  final variantNameCamel = variantName.toCamelCase();
   final map = await builder.resolveIdentifier(_dartCore, 'Map');
   final string = await builder.resolveIdentifier(_dartCore, 'String');
   final object = await builder.resolveIdentifier(_dartCore, 'Object');
@@ -114,7 +117,7 @@ Future<Code> generateVariantToJson(ClassTypeBuilder builder, String prefix, Stri
   }
   else {
     parts.add(RawCode.fromParts(["final json = <", string, ",", list, "<", object, "?>>{};"]));
-    parts.add(RawCode.fromParts(["final $variantName = [];"]));
+    parts.add(RawCode.fromParts(["final $variantNameCamel = [];"]));
   }
   for (final field in fields) {
     final (fieldType, fieldName) = field;
@@ -132,15 +135,15 @@ Future<Code> generateVariantToJson(ClassTypeBuilder builder, String prefix, Stri
               "int, double, String, bool, List, Set, Map not supported yet, wrap in another type and add @JsonCodable() or @Serde()"); // todo
         }
         if(fields.length == 1) {
-          parts.add(RawCode.fromString("final $variantName = this.$fieldName.toJson();"));
+          parts.add(RawCode.fromString("final $variantNameCamel = this.$fieldName.toJson();"));
         }
         else {
-          parts.add(RawCode.fromString("$variantName.add(this.$fieldName.toJson());"));
+          parts.add(RawCode.fromString("$variantNameCamel.add(this.$fieldName.toJson());"));
         }
         break;
     }
   }
-  parts.add(RawCode.fromString("json[r'$variantName'] = $variantName;"));
+  parts.add(RawCode.fromString("json[r'$variantName'] = $variantNameCamel;"));
   parts.add(RawCode.fromString("return json;"));
   parts.add(RawCode.fromString("}"));
   return RawCode.fromParts(parts);

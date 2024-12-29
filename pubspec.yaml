@@ -9,6 +9,8 @@ environment:
 dependencies:
   macros: ^0.1.3-main.0
   json: ^0.20.0
+  change_case: ^2.1.0
+  # show_augmentation: ^0.1.0-8.dev # e.g. `dart run show_augmentation --file=examples/algebraic_types.dart`
 
 dev_dependencies:
   lints: ^5.0.0
